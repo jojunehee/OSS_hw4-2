@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>택배 관리 서비스</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        /* 그리드 반응형으로*/
+        #parcel-list {
+            display: grid;
+            gap: 15px;
+            padding: 10px;
+            width: 100%;
+            max-width: 1200px;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        }
+
+        /* 택배 목록 상자*/
+        .parcel-box {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            text-align: left;
+        }
+
+        .parcel-box h3 {
+            margin: 0 0 10px;
+            color: #555;
+        }
+
+        .parcel-box p {
+            margin: 5px 0;
+            color: #666;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        .button-group button {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            color: #fff;
+        }
+
+        .edit-button {
+            background-color: rgb(156, 156, 0);
+        }
+
+        .delete-button {
+            background-color: red;
+        }
+
+        .add-button {
+            background-color: rgb(79, 79, 255);
+        }
+
+        /* 모달 창 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            /*가운데로 고정*/
+            width: 100%;
+            height: 100%;
+            background-color: rgba(52, 41, 41, 0.61);
+            /*나타나면 주변 살짝 어둡게하는 게 배경 값이었다고*/
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 8px;
+            width: 300px;
+            text-align: center;
+        }
+
+        .modal-content input,
+        .modal-content select {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #dddddddb;
+            border-radius: 4px;
+        }
+
+        .modal-content button {
+            margin-top: 10px;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .save-button {
+            background-color: rgb(0, 156, 18);
+            color: #fff;
+        }
+
+        .cancel-button {
+            background-color: red;
+            color: #fff;
+        }
+
+        .add-button {
+            background-color: rgb(79, 79, 255);
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <h1>택배 관리 서비스</h1>
+    <div id="parcel-list"></div>
+    <div class="button-group">
+        <button class="add-button" onclick="openModal()">Add Parcel</button>
+    </div>
+
+    <!-- 모달 폼 -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <h2 id="modal-title">Add Parcel</h2>
+            <input type="hidden" id="parcel-id">
+            <input type="text" id="tracking-number" placeholder="Tracking Number">
+            <input type="text" id="sender-name" placeholder="Sender Name">
+            <input type="text" id="recipient-name" placeholder="Recipient Name">
+            <input type="text" id="recipient-address" placeholder="Recipient Address">
+            <select id="status">
+                <option value="발송 준비">발송 준비</option>
+                <option value="배송 중">배송 중</option>
+                <option value="배송 완료">배송 완료</option>
+                <option value="반송">반송</option>
+            </select>
+            <input type="number" id="cost" placeholder="Cost" step="100">
+            <button class="save-button" onclick="saveParcel()">Save</button>
+            <button class="cancel-button" onclick="closeModal()">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        const apiUrl = "https://67296bac6d5fa4901b6d14a6.mockapi.io/oss4-2/parcels";
+
+        // 목록 서버에서 가져오기 
+        function getParcels() {
+            const xhr = new XMLHttpRequest();
+            xhr.open("GET", apiUrl, true);
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    const parcels = JSON.parse(xhr.responseText);
+                    displayParcels(parcels);
+                }
+            };
+            xhr.send();
+        }
+
+        function displayParcels(parcels) {
+            const parcelList = document.getElementById("parcel-list");
+            parcelList.innerHTML = "";
+
+            parcels.forEach(parcel => {
+                const div = document.createElement("div");
+                div.className = "parcel-box";
+
+                div.innerHTML = `
+                    <p>Id: ${parcel.id}</p>
+                    <h3>Tracking Number: ${parcel.tracking_number}</h3>
+                    <p>Sender: ${parcel.sender_name}</p>
+                    <p>Recipient: ${parcel.recipient_name}, ${parcel.recipient_address}</p>
+                    <p>Status: ${parcel.status}</p>
+                    <p>Cost: ${parcel.cost}원</p>
+                    <div class="button-group">
+                        <button class="edit-button" onclick="openModal(${parcel.id}, '${parcel.tracking_number}', '${parcel.sender_name}', '${parcel.recipient_name}', '${parcel.recipient_address}', '${parcel.status}', ${parcel.cost})">Edit</button>
+                        <button class="delete-button" onclick="deleteParcel(${parcel.id})">Delete</button>
+                    </div>
+                `;
+
+                parcelList.appendChild(div);
+            });
+        }
+
+        // 수정/업데이트 창
+        function openModal(id = null, tracking = "", sender = "", recipient = "", address = "", status = "발송 준비", cost = "") {
+            document.getElementById("parcel-id").value = id || "";
+            document.getElementById("tracking-number").value = tracking;
+            document.getElementById("sender-name").value = sender;
+            document.getElementById("recipient-name").value = recipient;
+            document.getElementById("recipient-address").value = address;
+            document.getElementById("status").value = status;
+            document.getElementById("cost").value = cost;
+            document.getElementById("modal-title").innerText = id ? "Edit Parcel" : "Add Parcel";
+            document.getElementById("modal").style.display = "flex";
+        }
+
+        // 모달 닫기
+        function closeModal() {
+            document.getElementById("modal").style.display = "none";
+            // 모달 초기화
+            document.getElementById("parcel-id").value = "";
+        }
+
+        // 데이터 생성/수정 후 저장 함수
+        function saveParcel() {
+            const id = document.getElementById("parcel-id").value;
+            const trackingNumber = document.getElementById("tracking-number").value.trim();
+            const senderName = document.getElementById("sender-name").value.trim();
+            const recipientName = document.getElementById("recipient-name").value.trim();
+            const recipientAddress = document.getElementById("recipient-address").value.trim();
+            const status = document.getElementById("status").value;
+            const cost = document.getElementById("cost").value.trim();
+
+            if (!trackingNumber || !senderName || !recipientName || !recipientAddress || !status || !cost) {
+                alert("모든 정보를 입력해야 합니다.");
+                return;
+            }
+
+            const parcelData = {
+                tracking_number: trackingNumber,
+                sender_name: senderName,
+                recipient_name: recipientName,
+                recipient_address: recipientAddress,
+                status: status,
+                cost: parseFloat(cost)
+            };
+
+            if (id) {
+                // 기존 데이터 수정
+                const xhr = new XMLHttpRequest();
+                xhr.open("PUT", `${apiUrl}/${id}`, true);
+                xhr.setRequestHeader("Content-Type", "application/json");
+                xhr.onload = function () {
+                    if (xhr.status === 200) {
+                        closeModal();
+                        getParcels();
+                    }
+                };
+                xhr.send(JSON.stringify(parcelData));
+            } else {
+                // 새 데이터 추가
+                const xhrPost = new XMLHttpRequest();
+                xhrPost.open("POST", apiUrl, true);
+                xhrPost.setRequestHeader("Content-Type", "application/json");
+                xhrPost.onload = function () {
+                    if (xhrPost.status === 201) {
+                        closeModal();
+                        getParcels();
+                    }
+                };
+                xhrPost.send(JSON.stringify(parcelData));
+            }
+        }
+
+        // 데이터 삭제
+        function deleteParcel(parcelId) {
+            if (confirm("Are you sure you want to delete this parcel?")) {
+                const xhr = new XMLHttpRequest();
+                xhr.open("DELETE", `${apiUrl}/${parcelId}`, true);
+                xhr.onload = function () {
+                    if (xhr.status === 200) {
+                        getParcels();
+                    }
+                };
+                xhr.send();
+            }
+        }
+
+        // 페이지 로드 시 데이터 가져오기
+        window.onload = getParcels;
+    </script>
+</body>
+</html>
