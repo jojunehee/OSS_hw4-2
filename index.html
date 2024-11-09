@@ -1,9 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>택배 관리 서비스</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -15,6 +18,38 @@
 
         h1 {
             color: #333;
+        }
+
+
+        /* 히어로 섹션 */
+        section.hero {
+            background-image: url('herosectionimage.png');
+            background-size: cover;
+            background-position: center;
+            width: 100%;
+            height: 60vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            text-align: center;
+        }
+
+        /* 제목 스타일 */
+        section.hero h1 {
+            font-size: 4rem;
+            font-weight: bold;
+            margin: 0;
+            color: #fff;
+            text-shadow: 3px 3px 5px red, -3px -3px 5px brown;
+        }
+
+        /* 설명 스타일 */
+        section.hero p {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #fff;
+            text-shadow: 3px 3px 5px red, -3px -3px 5px brown;
         }
 
         /* 그리드 반응형으로*/
@@ -62,101 +97,84 @@
         }
 
         .edit-button {
-            background-color: rgb(156, 156, 0);
+            background-color: rgb(189, 189, 5);
+        }
+        .edit-button:hover {
+            background-color: rgb(63, 63, 0);
         }
 
         .delete-button {
             background-color: red;
         }
+        .delete-button:hover {
+            background-color: rgb(136, 0, 0);
+        }
+
 
         .add-button {
             background-color: rgb(79, 79, 255);
-        }
-
-        /* 모달 창 */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            /*가운데로 고정*/
-            width: 100%;
-            height: 100%;
-            background-color: rgba(52, 41, 41, 0.61);
-            /*나타나면 주변 살짝 어둡게하는 게 배경 값이었다고*/
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-content {
-            background-color: #fff;
-            padding: 40px;
-            border-radius: 8px;
-            width: 300px;
-            text-align: center;
-        }
-
-        .modal-content input,
-        .modal-content select {
-            width: 100%;
-            padding: 8px;
-            margin: 5px 0;
-            border: 1px solid #dddddddb;
-            border-radius: 4px;
-        }
-
-        .modal-content button {
-            margin-top: 10px;
-            padding: 8px 15px;
+            color: #fff;
+            padding: 15px 30px; 
+            font-size: 1.5rem;  
+            border-radius: 12px; 
             border: none;
-            border-radius: 10px;
             cursor: pointer;
+            transition: background-color 0.3s;
+            margin-bottom: 20px;
         }
-
-        .save-button {
-            background-color: rgb(0, 156, 18);
-            color: #fff;
-        }
-
-        .cancel-button {
-            background-color: red;
-            color: #fff;
-        }
-
-        .add-button {
-            background-color: rgb(79, 79, 255);
-            color: #fff;
+    
+        .add-button:hover {
+            background-color: rgb(59, 59, 204); 
         }
     </style>
 </head>
+
 <body>
-    <h1>택배 관리 서비스</h1>
+    <!-- 히어로 섹션 -->
+    <section class="hero">
+        <div>
+            <h1>택배 관리 서비스</h1>
+            <p>빠르고 간편하게 택배를 관리하세요</p>
+        </div>
+    </section>
+
     <div id="parcel-list"></div>
     <div class="button-group">
-        <button class="add-button" onclick="openModal()">Add Parcel</button>
+        <button class="add-button" data-bs-toggle="modal" data-bs-target="#parcelModal">택배 추가</button>
     </div>
 
-    <!-- 모달 폼 -->
-    <div id="modal" class="modal">
-        <div class="modal-content">
-            <h2 id="modal-title">Add Parcel</h2>
-            <input type="hidden" id="parcel-id">
-            <input type="text" id="tracking-number" placeholder="Tracking Number">
-            <input type="text" id="sender-name" placeholder="Sender Name">
-            <input type="text" id="recipient-name" placeholder="Recipient Name">
-            <input type="text" id="recipient-address" placeholder="Recipient Address">
-            <select id="status">
-                <option value="발송 준비">발송 준비</option>
-                <option value="배송 중">배송 중</option>
-                <option value="배송 완료">배송 완료</option>
-                <option value="반송">반송</option>
-            </select>
-            <input type="number" id="cost" placeholder="Cost" step="100">
-            <button class="save-button" onclick="saveParcel()">Save</button>
-            <button class="cancel-button" onclick="closeModal()">Cancel</button>
+    <!-- 부트스트랩 모달 폼 -->
+    <div class="modal fade" id="parcelModal" tabindex="-1" aria-labelledby="parcelModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="parcelModalLabel">Add Parcel</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="parcel-id">
+                    <input type="text" class="form-control mb-2" id="tracking-number" placeholder="Tracking Number">
+                    <input type="text" class="form-control mb-2" id="sender-name" placeholder="Sender Name">
+                    <input type="text" class="form-control mb-2" id="recipient-name" placeholder="Recipient Name">
+                    <input type="text" class="form-control mb-2" id="recipient-address" placeholder="Recipient Address">
+                    <select id="status" class="form-select mb-2">
+                        <option value="발송 준비">발송 준비</option>
+                        <option value="배송 중">배송 중</option>
+                        <option value="배송 완료">배송 완료</option>
+                        <option value="반송">반송</option>
+                    </select>
+                    <input type="number" class="form-control mb-2" id="cost" placeholder="Cost" step="100">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="saveParcel()">Save</button>
+                </div>
+            </div>
         </div>
     </div>
 
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const apiUrl = "https://67296bac6d5fa4901b6d14a6.mockapi.io/oss4-2/parcels";
 
@@ -189,7 +207,7 @@
                     <p>Status: ${parcel.status}</p>
                     <p>Cost: ${parcel.cost}원</p>
                     <div class="button-group">
-                        <button class="edit-button" onclick="openModal(${parcel.id}, '${parcel.tracking_number}', '${parcel.sender_name}', '${parcel.recipient_name}', '${parcel.recipient_address}', '${parcel.status}', ${parcel.cost})">Edit</button>
+                        <button class="edit-button" data-bs-toggle="modal" data-bs-target="#parcelModal" onclick="openModal(${parcel.id}, '${parcel.tracking_number}', '${parcel.sender_name}', '${parcel.recipient_name}', '${parcel.recipient_address}', '${parcel.status}', ${parcel.cost})">Edit</button>
                         <button class="delete-button" onclick="deleteParcel(${parcel.id})">Delete</button>
                     </div>
                 `;
@@ -207,15 +225,7 @@
             document.getElementById("recipient-address").value = address;
             document.getElementById("status").value = status;
             document.getElementById("cost").value = cost;
-            document.getElementById("modal-title").innerText = id ? "Edit Parcel" : "Add Parcel";
-            document.getElementById("modal").style.display = "flex";
-        }
-
-        // 모달 닫기
-        function closeModal() {
-            document.getElementById("modal").style.display = "none";
-            // 모달 초기화
-            document.getElementById("parcel-id").value = "";
+            document.getElementById("parcelModalLabel").innerText = id ? "Edit Parcel" : "Add Parcel";
         }
 
         // 데이터 생성/수정 후 저장 함수
@@ -249,7 +259,8 @@
                 xhr.setRequestHeader("Content-Type", "application/json");
                 xhr.onload = function () {
                     if (xhr.status === 200) {
-                        closeModal();
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('parcelModal'));
+                        modal.hide();
                         getParcels();
                     }
                 };
@@ -261,7 +272,8 @@
                 xhrPost.setRequestHeader("Content-Type", "application/json");
                 xhrPost.onload = function () {
                     if (xhrPost.status === 201) {
-                        closeModal();
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('parcelModal'));
+                        modal.hide();
                         getParcels();
                     }
                 };
@@ -287,4 +299,5 @@
         window.onload = getParcels;
     </script>
 </body>
+
 </html>
